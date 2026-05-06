@@ -5,20 +5,28 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+def _normalize_url(url: str) -> str:
+    """Railway entrega postgresql:// — SQLAlchemy async necesita postgresql+asyncpg://"""
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+asyncpg://", 1)
+    if url.startswith("postgresql://") and "+asyncpg" not in url:
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return url
+
+
 def _build_engine():
-    url = settings.DATABASE_URL
+    url = _normalize_url(settings.DATABASE_URL)
     kwargs = {"echo": settings.DEBUG}
 
-    if settings.is_sqlite:
-        # SQLite: solo para desarrollo local
+    if "sqlite" in url:
         kwargs["connect_args"] = {"check_same_thread": False}
         logger.warning("⚠️  Usando SQLite — solo válido para desarrollo local")
-    elif settings.is_postgres:
-        # PostgreSQL: pool optimizado para Railway (conexiones limitadas en plan free)
+    else:
         kwargs["pool_size"] = 5
         kwargs["max_overflow"] = 10
-        kwargs["pool_pre_ping"] = True  # detecta conexiones caídas
-        kwargs["pool_recycle"] = 300    # recicla conexiones cada 5 min
+        kwargs["pool_pre_ping"] = True
+        kwargs["pool_recycle"] = 300
         logger.info("✅ Usando PostgreSQL")
 
     return create_async_engine(url, **kwargs)
@@ -50,12 +58,11 @@ async def get_db():
 
 
 async def init_db():
-    """Solo para desarrollo con SQLite. En producción usar: alembic upgrade head"""
-    if settings.is_postgres:
+    """Solo para SQLite en desarrollo. En producción usa Alembic."""
+    if "postgresql" in str(engine.url):
         logger.info("PostgreSQL detectado — omitiendo create_all. Usar Alembic.")
         return
-
     async with engine.begin() as conn:
         from app.models import restaurante, producto, pedido  # noqa
         await conn.run_sync(Base.metadata.create_all)
-    logger.info("✅ SQLite inicializado con create_all")
+    logger.info("✅ SQLite inicializado")
