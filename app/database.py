@@ -5,7 +5,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-
 def _build_engine():
     url = settings.DATABASE_URL
     kwargs = {"echo": settings.DEBUG}
