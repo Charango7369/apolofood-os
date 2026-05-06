@@ -1,0 +1,51 @@
+version: "3.9"
+# Entorno de desarrollo local que replica Railway + Cloudflare Pages
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: apolofood
+      POSTGRES_USER: apolofood
+      POSTGRES_PASSWORD: apolofood_dev
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U apolofood"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Sobreescribe DATABASE_URL del .env para usar el postgres del compose
+      DATABASE_URL: postgresql+asyncpg://apolofood:apolofood_dev@db:5432/apolofood
+      REDIS_URL: redis://redis:6379/0
+      DEBUG: "true"
+      # CORS para el frontend en dev
+      CORS_ORIGINS: "http://localhost:5173,http://localhost:4173"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/app        # hot reload del código
+      - ./alembic:/app/alembic
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+volumes:
+  pg_data:

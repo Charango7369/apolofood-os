@@ -1,0 +1,5 @@
+# Igual que requirements.txt pero con las dependencias que requieren compilador C
+# Railway corre en Linux y las instala sin problema
+-r requirements.txt
+asyncpg==0.30.0
+Pillow==11.0.0
