@@ -22,6 +22,7 @@ async def seed():
             direccion="Plaza Principal, Apolo, La Paz",
         )
         db.add(rest)
+        await db.flush()  # ← AGREGAR ESTA LÍNEA
         cat1 = Categoria(id=str(uuid.uuid4()), restaurante_id=RESTAURANTE_ID, nombre="Platos del día", orden=1)
         cat2 = Categoria(id=str(uuid.uuid4()), restaurante_id=RESTAURANTE_ID, nombre="Bebidas", orden=2)
         db.add_all([cat1, cat2])
