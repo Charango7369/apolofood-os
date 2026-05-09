@@ -9,6 +9,7 @@ class Restaurante(Base):
     __tablename__ = "restaurantes"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    slug: Mapped[str] = mapped_column(String(80), unique=True, nullable=False, index=True)
     nombre: Mapped[str] = mapped_column(String(120), nullable=False)
     telefono: Mapped[str] = mapped_column(String(20), nullable=False)
     whatsapp: Mapped[str] = mapped_column(String(20), nullable=True)

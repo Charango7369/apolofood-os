@@ -6,7 +6,7 @@ import logging
 
 from app.config import settings
 from app.database import init_db
-from app.routers import pedidos, menu, whatsapp, reportes
+from app.routers import pedidos, menu, whatsapp, reportes, auth, usuarios
 from app.workers.notificaciones_worker import worker_notificaciones
 
 logging.basicConfig(
@@ -48,6 +48,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(auth.router)
+app.include_router(usuarios.router)
 app.include_router(pedidos.router)
 app.include_router(menu.router)
 app.include_router(whatsapp.router)
