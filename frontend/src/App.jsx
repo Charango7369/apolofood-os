@@ -1,38 +1,71 @@
-import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner'
-import Menu from './pages/Menu'
-import Panel from './pages/Panel'
-import Reportes from './pages/Reportes'
+import { AuthProvider, useAuth } from './context/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
+import Login from './pages/Login'
+import AdminHome from './pages/AdminHome'
+import Caja from './pages/Caja'
+import Cocina from './pages/Cocina'
 
-function NavLink({ to, children }) {
-  const { pathname } = useLocation()
-  const active = pathname === to
-  return (
-    <Link to={to} className={`px-4 py-2 rounded-lg font-medium transition-colors ${active ? 'bg-red-700 text-white' : 'text-gray-400 hover:text-white'}`}>
-      {children}
-    </Link>
-  )
+/**
+ * Componente raíz que decide a dónde ir según el estado de auth.
+ */
+function RootRedirect() {
+  const { usuario, cargando } = useAuth()
+
+  if (cargando) return null
+
+  if (!usuario) return <Navigate to="/login" replace />
+
+  if (usuario.rol === 'admin' || usuario.rol === 'superadmin') {
+    return <Navigate to="/admin" replace />
+  }
+  if (usuario.rol === 'cajero') {
+    return <Navigate to="/caja" replace />
+  }
+  if (usuario.rol === 'cocina') {
+    return <Navigate to="/cocina" replace />
+  }
+  return <Navigate to="/login" replace />
 }
+
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <AuthProvider>
       <Toaster richColors position="top-center" />
-      <nav className="bg-gray-900 border-b border-gray-800 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-4">
-          <span className="font-bold text-yellow-400 mr-4">🍽️ ApoloFoodOS</span>
-          <NavLink to="/">Menú</NavLink>
-          <NavLink to="/panel">Panel</NavLink>
-          <NavLink to="/reportes">Reportes</NavLink>
-        </div>
-      </nav>
-      <main className="py-6">
-        <Routes>
-          <Route path="/" element={<Menu />} />
-          <Route path="/panel" element={<Panel />} />
-          <Route path="/reportes" element={<Reportes />} />
-        </Routes>
-      </main>
-    </div>
+      <Routes>
+        <Route path="/" element={<RootRedirect />} />
+        <Route path="/login" element={<Login />} />
+
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute roles={['admin', 'superadmin']}>
+              <AdminHome />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/caja"
+          element={
+            <ProtectedRoute roles={['cajero', 'admin']}>
+              <Caja />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cocina"
+          element={
+            <ProtectedRoute roles={['cocina', 'admin']}>
+              <Cocina />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Catch-all: redirige a la raíz */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AuthProvider>
   )
 }
