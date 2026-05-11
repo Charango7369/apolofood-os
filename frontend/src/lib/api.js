@@ -65,6 +65,7 @@ export const pedidosAPI = {
 export const menuAPI = {
   obtener: () => api.get('/menu/'),
   crearProducto: (payload) => api.post('/menu/productos', payload),
+  actualizarProducto: (id, payload) => api.patch(`/menu/productos/${id}`, payload),
 }
 
 // === Reportes ===
@@ -77,6 +78,7 @@ export const usuariosAPI = {
   listar: () => api.get('/usuarios/'),
   crear: (payload) => api.post('/usuarios/', payload),
   desactivar: (id) => api.patch(`/usuarios/${id}/desactivar`),
+  activar: (id) => api.patch(`/usuarios/${id}/activar`),
 }
 
 export default api

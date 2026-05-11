@@ -4,12 +4,14 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import AdminHome from './pages/AdminHome'
+import AdminPedidos from './pages/AdminPedidos'
+import AdminMenu from './pages/AdminMenu'
+import AdminReportes from './pages/AdminReportes'
+import AdminUsuarios from './pages/AdminUsuarios'
 import Caja from './pages/Caja'
 import Cocina from './pages/Cocina'
 
-/**
- * Componente raíz que decide a dónde ir según el estado de auth.
- */
+
 function RootRedirect() {
   const { usuario, cargando } = useAuth()
 
@@ -38,6 +40,7 @@ export default function App() {
         <Route path="/" element={<RootRedirect />} />
         <Route path="/login" element={<Login />} />
 
+        {/* Rutas Admin */}
         <Route
           path="/admin"
           element={
@@ -46,6 +49,40 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/pedidos"
+          element={
+            <ProtectedRoute roles={['admin', 'superadmin']}>
+              <AdminPedidos />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/menu"
+          element={
+            <ProtectedRoute roles={['admin', 'superadmin']}>
+              <AdminMenu />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/reportes"
+          element={
+            <ProtectedRoute roles={['admin', 'superadmin']}>
+              <AdminReportes />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/usuarios"
+          element={
+            <ProtectedRoute roles={['admin', 'superadmin']}>
+              <AdminUsuarios />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rutas Caja y Cocina */}
         <Route
           path="/caja"
           element={
@@ -63,7 +100,6 @@ export default function App() {
           }
         />
 
-        {/* Catch-all: redirige a la raíz */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </AuthProvider>

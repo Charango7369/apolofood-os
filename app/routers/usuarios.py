@@ -76,7 +76,7 @@ async def desactivar(
     result = await db.execute(
         select(Usuario).where(
             Usuario.id == usuario_id,
-            Usuario.restaurante_id == admin.restaurante_id,  # aislamiento
+            Usuario.restaurante_id == admin.restaurante_id,
         )
     )
     u = result.scalar_one_or_none()
@@ -85,3 +85,23 @@ async def desactivar(
     u.activo = False
     await db.commit()
     return {"status": "desactivado"}
+
+
+@router.patch("/{usuario_id}/activar")
+async def activar(
+    usuario_id: str,
+    admin: Usuario = Depends(require_role(RolUsuario.ADMIN)),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Usuario).where(
+            Usuario.id == usuario_id,
+            Usuario.restaurante_id == admin.restaurante_id,
+        )
+    )
+    u = result.scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    u.activo = True
+    await db.commit()
+    return {"status": "activado"}
