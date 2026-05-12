@@ -66,7 +66,7 @@ export default function AdminReportes() {
           <>
             <div className="bg-gray-800/60 rounded-xl p-4 mb-4 text-center">
               <p className="text-sm text-gray-400">
-                {new Date(resumen.fecha + 'T00:00:00').toLocaleDateString('es-BO', {
+                {new Date(resumen.fecha + 'T12:00:00').toLocaleDateString('es-BO', {
                   weekday: 'long',
                   year: 'numeric',
                   month: 'long',
